@@ -1,0 +1,16 @@
+[project]
+name = "comfyui-sc-yue2-abc-helpers"
+description = "ShantyCircuit nodes for YuE2 ABC scores: search for a score that fits a target song length, check a score's length, change its tempo, and repair meter glitches."
+version = "1.0.0"
+license = { file = "LICENSE" }
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/ShantyCircuit/ComfyUI-SC-YuE2-ABC-Helpers"
+"Bug Tracker" = "https://github.com/ShantyCircuit/ComfyUI-SC-YuE2-ABC-Helpers/issues"
+
+[tool.comfy]
+PublisherId = ""  # TODO: your publisher ID from https://registry.comfy.org
+DisplayName = "SC YuE2 ABC Helpers"
+Icon = ""
+includes = []
