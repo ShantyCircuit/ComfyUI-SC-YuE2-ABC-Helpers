@@ -20,19 +20,17 @@ const NEW_SEARCH = "new search (random seed)";
 // Size of each node's text box. The search node's box can also grow with the
 // node; the others stay fixed and scroll if there's more text than fits.
 const SEARCH_BOX_HEIGHT = 110;  // about six lines
-const BOX_LINES = { SC_YuE2ABCSongLength: 4, SC_YuE2ABCSpeedChange: 3, SC_YuE2ABCFixMeter: 2 };
+const BOX_LINES = { SC_YuE2ABCSongLength: 4, SC_YuE2ABCSpeedChange: 3, SC_YuE2ABCFixMeter: 3 };
 const LINE_HEIGHT = 18;
 const BOX_PADDING = 8;
 
 // Default width of newly added nodes. Nodes loaded from a saved workflow keep
 // their saved size, and any node can still be resized by hand.
-const NODE_WIDTHS = { SC_YuE2ABCSongLength: 360, SC_YuE2ABCFixMeter: 360, SC_YuE2ABCSpeedChange: 280 };
+const NODE_WIDTHS = { SC_YuE2ABCSongLength: 260, SC_YuE2ABCFixMeter: 260, SC_YuE2ABCSpeedChange: 260 };
 
 function applyDefaultWidth(node) {
-  const width = NODE_WIDTHS[node.comfyClass] ?? NODE_WIDTHS[node.type];
-  if (!width) return;
-  node.setSize([width, node.size[1]]);
-  redraw();
+  const width = NODE_WIDTHS[node.constructor.comfyClass];
+  if (width) node.setSize([width, node.size[1]]);
 }
 
 function fixedBoxHeight(node) {
@@ -306,6 +304,12 @@ app.registerExtension({
     });
   },
 
+  // Runs right after a node is built. Nodes loaded from a workflow get their
+  // saved size applied afterwards, so this only shows on newly added nodes.
+  nodeCreated(node) {
+    applyDefaultWidth(node);
+  },
+
   async beforeRegisterNodeDef(nodeType, nodeData) {
     if (!NODE_IDS.has(nodeData.name)) return;
 
@@ -322,23 +326,6 @@ app.registerExtension({
         if (seed !== undefined) setSeed(this, Number(seed));
       }
     };
-
-    // Default widths for newly added nodes (skipped for nodes loaded from a workflow).
-    if (NODE_WIDTHS[nodeData.name]) {
-      const onConfigure = nodeType.prototype.onConfigure;
-      nodeType.prototype.onConfigure = function () {
-        this.__scLoaded = true;  // loaded from a saved workflow: keep its saved size
-        return onConfigure?.apply(this, arguments);
-      };
-      const onCreated = nodeType.prototype.onNodeCreated;
-      nodeType.prototype.onNodeCreated = function () {
-        onCreated?.apply(this, arguments);
-        // Wait a frame so ComfyUI has finished sizing (and, for saved nodes, loading) it.
-        requestAnimationFrame(() => {
-          if (!this.__scLoaded) applyDefaultWidth(this);
-        });
-      };
-    }
 
     if (nodeData.name === SEARCH_NODE) {
       const onNodeCreated = nodeType.prototype.onNodeCreated;
